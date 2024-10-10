@@ -144,15 +144,8 @@ const UserController = {
     }
   },
   updateUser: async (req, res) => {
-    let {
-      displayName,
-      username,
-      password,
-      email,
-      location,
-      dateOfBirth,
-      avatarUrl,
-    } = req.body;
+    let { displayName, username, password, email, location, dateOfBirth } =
+      req.body;
     const id = req.user.userId;
 
     // TODO: add new email verification, then support for file avatars instead of urls, and then maybe add a limit for

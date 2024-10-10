@@ -15,11 +15,18 @@ const PostController = {
         .json({ error: "Either text or image must be provided." });
     }
 
+    let filePath;
+
+    if (req.file && req.file.path) {
+      filePath = req.file.path;
+    }
+
+
     try {
       const newPost = await prisma.post.create({
         data: {
           text,
-          imageUrl,
+          imageUrl: filePath ? `/${filePath}` : undefined,
           authorId,
           parentId: replyToId,
         },

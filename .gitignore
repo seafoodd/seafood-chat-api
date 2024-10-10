@@ -1,4 +1,7 @@
 .idea
 node_modules
+
+media/*
+!media/default_images/
 # Keep environment variables out of version control
 .env

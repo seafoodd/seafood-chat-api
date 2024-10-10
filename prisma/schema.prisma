@@ -25,7 +25,7 @@ model User {
   likes       Like[]
   followers   Follows[] @relation("following")
   following   Follows[] @relation("follower")
-  avatarUrl   String    @default("/public/images/default-avatar.png")
+  avatarUrl   String    @default("/media/default_images/default-avatar.png")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
