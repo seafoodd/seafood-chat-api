@@ -4,7 +4,7 @@ const PostController = {
   createPost: async (req, res) => {
     const { text, imageUrl, reply } = req.body;
     const authorId = req.user.userId;
-    const { replyToId, excludeReplyUserIds } = reply;
+    const { replyToId, excludeReplyUserIds } = reply || {};
     console.log(replyToId, excludeReplyUserIds);
 
     // TODO: implement notifications...😭 (that's what excludeReplyUserIds are for)
@@ -32,8 +32,14 @@ const PostController = {
   },
   getAllPosts: async (req, res) => {
     try {
-      const posts = await prisma.post.findMany({ where: { parent: null } });
-      console.log(posts);
+      const posts = await prisma.post.findMany({
+        where: { parent: null },
+        include: {
+          _count: {
+            select: { replies: true, likes: true },
+          },
+        },
+      });
       res.status(200).json(posts);
     } catch (e) {
       console.log(e);
