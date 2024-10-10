@@ -4,8 +4,8 @@ const PostController = {
   createPost: async (req, res) => {
     const { text, imageUrl, reply } = req.body;
     const authorId = req.user.userId;
-    const {replyToId, excludeReplyUserIds} = reply
-    console.log(replyToId, excludeReplyUserIds)
+    const { replyToId, excludeReplyUserIds } = reply;
+    console.log(replyToId, excludeReplyUserIds);
 
     // TODO: implement notifications...😭 (that's what excludeReplyUserIds are for)
 
@@ -21,7 +21,7 @@ const PostController = {
           text,
           imageUrl,
           authorId,
-          parentId: replyToId
+          parentId: replyToId,
         },
       });
       res.status(201).json(newPost);
@@ -32,7 +32,8 @@ const PostController = {
   },
   getAllPosts: async (req, res) => {
     try {
-      const posts = await prisma.post.findMany();
+      const posts = await prisma.post.findMany({ where: { parent: null } });
+      console.log(posts);
       res.status(200).json(posts);
     } catch (e) {
       console.log(e);
@@ -75,11 +76,9 @@ const PostController = {
       });
 
       if (!existingPost) {
-        return res
-          .status(404)
-          .json({
-            error: "Post not found or you don't have access to delete it.",
-          });
+        return res.status(404).json({
+          error: "Post not found or you don't have access to delete it.",
+        });
       }
 
       const post = await prisma.post.delete({
