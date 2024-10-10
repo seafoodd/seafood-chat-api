@@ -23,7 +23,6 @@ model User {
   dateOfBirth DateTime?
   posts       Post[]
   likes       Like[]
-  comments    Comment[]
   followers   Follows[] @relation("following")
   following   Follows[] @relation("follower")
   avatarUrl   String    @default("/public/images/default-avatar.png")
@@ -40,15 +39,17 @@ model Follows {
 }
 
 model Post {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   text      String?
   imageUrl  String?
-  author    User      @relation(fields: [authorId], references: [id])
-  authorId  String    @db.ObjectId
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String   @db.ObjectId
   likes     Like[]
-  comments  Comment[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  parentId  String?  @db.ObjectId
+  parent    Post?    @relation("PostReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies   Post[]   @relation("PostReplies")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Like {
@@ -59,11 +60,12 @@ model Like {
   postId String @db.ObjectId
 }
 
-model Comment {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  content String
-  user    User   @relation(fields: [userId], references: [id])
-  userId  String @db.ObjectId
-  post    Post   @relation(fields: [postId], references: [id])
-  postId  String @db.ObjectId
-}
+// model Comment {
+//   id       String  @id @default(auto()) @map("_id") @db.ObjectId
+//   text     String?
+//   imageUrl String?
+//   user     User    @relation(fields: [userId], references: [id])
+//   userId   String  @db.ObjectId
+//   post     Post    @relation(fields: [postId], references: [id])
+//   postId   String  @db.ObjectId
+// }

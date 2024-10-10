@@ -2,8 +2,12 @@ const { prisma } = require("../prisma/prisma-client");
 
 const PostController = {
   createPost: async (req, res) => {
-    const { text, imageUrl } = req.body;
+    const { text, imageUrl, reply } = req.body;
     const authorId = req.user.userId;
+    const {replyToId, excludeReplyUserIds} = reply
+    console.log(replyToId, excludeReplyUserIds)
+
+    // TODO: implement notifications...😭 (that's what excludeReplyUserIds are for)
 
     if (!text && !imageUrl) {
       return res
@@ -17,6 +21,7 @@ const PostController = {
           text,
           imageUrl,
           authorId,
+          parentId: replyToId
         },
       });
       res.status(201).json(newPost);
