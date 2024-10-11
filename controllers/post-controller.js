@@ -21,7 +21,6 @@ const PostController = {
       filePath = req.file.path;
     }
 
-
     try {
       const newPost = await prisma.post.create({
         data: {
@@ -60,7 +59,12 @@ const PostController = {
     try {
       const post = await prisma.post.findUnique({
         where: { id },
-        include: { likes: true, comments: true },
+        include: {
+          replies: {
+            include: { _count: { select: { likes: true, replies: true } } },
+          },
+          _count: { select: { likes: true, replies: true } },
+        },
       });
 
       if (!post) {
