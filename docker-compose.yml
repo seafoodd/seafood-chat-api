@@ -3,7 +3,7 @@ services:
   express-app:
     build: .
     ports:
-      - '80:80'
+      - '5000:5000'
     depends_on:
       - db
     env_file:
@@ -14,5 +14,12 @@ services:
       - '27017:27017'
     env_file:
       - .env
+  react-app:
+    build:
+      context: ../seafood-chat
+      args:
+        VITE_API_URL: "http://13.51.160.180:5000"
+    ports:
+      - '80:80'
 volumes:
-  seafood-chat-api:
+  seafood-chat:

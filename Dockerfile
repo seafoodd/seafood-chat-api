@@ -14,6 +14,6 @@ RUN prisma generate
 
 COPY prisma/schema.prisma ./prisma/
 
-EXPOSE 80
+EXPOSE 5000
 
 CMD [ "npm", "start" ]
