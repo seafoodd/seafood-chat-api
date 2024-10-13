@@ -41,6 +41,13 @@ const PostController = {
       const posts = await prisma.post.findMany({
         where: { parent: null },
         include: {
+          author: {
+            select: {
+              displayName: true,
+              username: true,
+              avatarUrl: true,
+            },
+          },
           _count: {
             select: { replies: true, likes: true },
           },
@@ -60,6 +67,13 @@ const PostController = {
       const post = await prisma.post.findUnique({
         where: { id },
         include: {
+          author: {
+            select: {
+              displayName: true,
+              username: true,
+              avatarUrl: true,
+            },
+          },
           replies: {
             include: { _count: { select: { likes: true, replies: true } } },
           },
