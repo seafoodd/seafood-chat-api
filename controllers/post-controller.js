@@ -2,8 +2,18 @@ const { prisma } = require("../prisma/prisma-client");
 
 const PostController = {
   createPost: async (req, res) => {
-    const { text, imageUrl, reply } = req.body;
+    const { text, imageUrl } = req.body;
     const authorId = req.user.userId;
+    let reply;
+
+    if (req.body.reply) {
+      try {
+        reply = JSON.parse(req.body.reply);
+      } catch (e) {
+        return res.status(400).json({ error: "Invalid reply format." });
+      }
+    }
+
     const { replyToId, excludeReplyUserIds } = reply || {};
     console.log(replyToId, excludeReplyUserIds);
 
