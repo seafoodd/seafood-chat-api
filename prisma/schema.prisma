@@ -50,6 +50,7 @@ model Post {
   replies   Post[]   @relation("PostReplies")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deleted   Boolean  @default(false)
 }
 
 model Like {

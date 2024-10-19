@@ -66,8 +66,11 @@ const PostController = {
         },
       });
 
+      // filter out deleted posts
+      const filteredPosts = posts.filter((post) => !post.deleted);
+
       const postsWithIsLiked = await Promise.all(
-        posts.map(async (post) => {
+        filteredPosts.map(async (post) => {
           const isLiked = userId
             ? await prisma.like.findFirst({
                 where: { AND: [{ userId: userId }, { postId: post.id }] },
@@ -136,9 +139,23 @@ const PostController = {
         });
       }
 
-      const post = await prisma.post.delete({
+      const post = await prisma.post.update({
         where: { id, authorId },
+        data: {
+          deleted: true,
+          imageUrl: null,
+          text: null,
+        },
       });
+
+      if (existingPost.imageUrl) {
+        const imagePath = path.join(__dirname, "..", existingPost.imageUrl);
+        fs.unlink(imagePath, (err) => {
+          if (err) {
+            console.error(`Failed to delete image file: ${err.message}`);
+          }
+        });
+      }
 
       res.status(200).json(post);
     } catch (e) {
