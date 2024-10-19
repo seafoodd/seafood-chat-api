@@ -102,7 +102,12 @@ const PostController = {
             },
           },
           replies: {
-            include: { _count: { select: { likes: true, replies: true } } },
+            include: {
+              _count: { select: { likes: true, replies: true } },
+              author: {
+                select: { displayName: true, avatarUrl: true, username: true },
+              },
+            },
           },
           _count: { select: { likes: true, replies: true } },
         },
@@ -118,6 +123,7 @@ const PostController = {
           })
         : false;
 
+      console.log(userId, id, isLiked);
       res.status(200).json({ ...post, isLiked: Boolean(isLiked) });
     } catch (e) {
       console.log(e);
