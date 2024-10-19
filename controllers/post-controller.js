@@ -88,50 +88,60 @@ const PostController = {
       res.status(500).json({ error: "Something went wrong." });
     }
   },
-  getPostById: async (req, res) => {
-    const { id } = req.params;
-    const userId = req.user ? req.user.userId : null;
+getPostById: async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user ? req.user.userId : null;
 
-    try {
-      const post = await prisma.post.findUnique({
-        where: { id },
-        include: {
-          author: {
-            select: {
-              displayName: true,
-              username: true,
-              avatarUrl: true,
-            },
+  try {
+    const post = await prisma.post.findUnique({
+      where: { id },
+      include: {
+        author: {
+          select: {
+            displayName: true,
+            username: true,
+            avatarUrl: true,
           },
-          replies: {
-            include: {
-              _count: { select: { likes: true, replies: true } },
-              author: {
-                select: { displayName: true, avatarUrl: true, username: true },
-              },
-            },
-          },
-          _count: { select: { likes: true, replies: true } },
         },
-      });
+        replies: {
+          include: {
+            _count: { select: { likes: true, replies: true } },
+            author: {
+              select: { displayName: true, avatarUrl: true, username: true },
+            },
+          },
+        },
+        _count: { select: { likes: true, replies: true } },
+      },
+    });
 
-      if (!post) {
-        return res.status(404).json({ error: "Post not found." });
-      }
-
-      const isLiked = userId
-        ? await prisma.like.findFirst({
-            where: { AND: [{ userId: userId }, { postId: id }] },
-          })
-        : false;
-
-      console.log(userId, id, isLiked);
-      res.status(200).json({ ...post, isLiked: Boolean(isLiked) });
-    } catch (e) {
-      console.log(e);
-      res.status(500).json({ error: "Something went wrong." });
+    if (!post) {
+      return res.status(404).json({ error: "Post not found." });
     }
-  },
+
+    const isLiked = userId
+      ? await prisma.like.findFirst({
+          where: { AND: [{ userId: userId }, { postId: id }] },
+        })
+      : false;
+
+    const repliesWithIsLiked = await Promise.all(
+      post.replies.map(async (reply) => {
+        const replyIsLiked = userId
+          ? await prisma.like.findFirst({
+              where: { AND: [{ userId: userId }, { postId: reply.id }] },
+            })
+          : false;
+        return { ...reply, isLiked: Boolean(replyIsLiked) };
+      })
+    );
+
+    res.status(200).json({ ...post, isLiked: Boolean(isLiked), replies: repliesWithIsLiked });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ error: "Something went wrong." });
+  }
+},
   deletePost: async (req, res) => {
     const { id } = req.params;
     const authorId = req.user ? req.user.userId : null;
