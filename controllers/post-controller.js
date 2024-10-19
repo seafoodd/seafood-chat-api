@@ -1,8 +1,9 @@
 const { prisma } = require("../prisma/prisma-client");
-
+const fs = require("fs");
+const path = require("fs");
 const PostController = {
   createPost: async (req, res) => {
-    const { text, imageUrl } = req.body;
+    const { text } = req.body;
     const authorId = req.user.userId;
     let reply;
 
@@ -19,16 +20,17 @@ const PostController = {
 
     // TODO: implement notifications...😭 (that's what excludeReplyUserIds are for)
 
-    if (!text && !imageUrl) {
-      return res
-        .status(400)
-        .json({ error: "Either text or image must be provided." });
-    }
 
     let filePath;
 
     if (req.file && req.file.path) {
       filePath = req.file.path;
+    }
+
+    if (!text && !filePath) {
+      return res
+        .status(400)
+        .json({ error: "Either text or image must be provided." });
     }
 
     try {
@@ -156,11 +158,15 @@ const PostController = {
 
       if (existingPost.imageUrl) {
         const imagePath = path.join(__dirname, "..", existingPost.imageUrl);
-        fs.unlink(imagePath, (err) => {
-          if (err) {
-            console.error(`Failed to delete image file: ${err.message}`);
+        console.log(imagePath);
+        try {
+          if (fs.existsSync(imagePath)) {
+            await fs.promises.unlink(imagePath); // Delete the temp file on error
+            console.log("Temp file deleted successfully");
           }
-        });
+        } catch (e) {
+          console.error("Error deleting file:", e);
+        }
       }
 
       res.status(200).json(post);
