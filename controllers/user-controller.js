@@ -1,6 +1,4 @@
 const { prisma } = require("../prisma/prisma-client");
-const path = require("path");
-const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -51,15 +49,17 @@ const UserController = {
     }
   },
   login: async (req, res) => {
-    const { email, username, password } = req.body;
+    const { username, password } = req.body;
 
-    if ((!email && !username) || !password) {
+    if (!username || !password) {
       return res.status(400).json({ error: "All fields are required." });
     }
 
     try {
-      const user = await prisma.user.findUnique({
-        where: email ? { email } : { username },
+      const user = await prisma.user.findFirst({
+        where: {
+          OR: [{ email: username }, { username: username }],
+        },
       });
 
       if (!user) {
