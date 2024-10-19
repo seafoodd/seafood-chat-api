@@ -47,6 +47,8 @@ const PostController = {
     }
   },
   getAllPosts: async (req, res) => {
+    const userId = req.user ? req.user.userId : null;
+
     try {
       const posts = await prisma.post.findMany({
         where: { parent: null },
@@ -63,7 +65,19 @@ const PostController = {
           },
         },
       });
-      res.status(200).json(posts);
+
+      const postsWithIsLiked = await Promise.all(
+        posts.map(async (post) => {
+          const isLiked = userId
+            ? await prisma.like.findFirst({
+                where: { AND: [{ userId: userId }, { postId: post.id }] },
+              })
+            : false;
+          return { ...post, isLiked: Boolean(isLiked) };
+        }),
+      );
+
+      res.status(200).json(postsWithIsLiked);
     } catch (e) {
       console.log(e);
       res.status(500).json({ error: "Something went wrong." });
